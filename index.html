@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<link href='https://fonts.googleapis.com/css?family=Alkalami' rel='stylesheet'>
+	<link href='https://fonts.googleapis.com/css?family=Noto Serif Vithkuqi' rel='stylesheet'>
+	<link href='https://fonts.googleapis.com/css?family=Piazzolla' rel='stylesheet'>
+	
+	<title>Dead Or Alive</title>
+	
+	<style>
+	
+		.header{
+			text-align:center;
+			font-family:'Piazzolla';
+			background-color:#b4b4b4;
+			margin-top:0;
+			marign-bottom:0;
+			padding-top:2px;
+			padding-bottom:2px;
+		}
+
+		.main{
+			display:grid;
+			grid-template-columns:auto auto auto;
+			padding:10px;
+			padding-top:0px;
+			text-align:center;
+		}
+		.main div{
+			padding: 10px;
+			font-size: 30px;
+			text-align: center;
+			justify-self:center;
+		}
+		
+		.buttons{
+			font-size:150%;
+		}
+		
+		.gameText{
+			font-size:160%
+		}
+		
+		h1{
+			font-size:400%;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="header">
+		<h1>Dead Or Alive</h1>
+	</div>
+	
+	<div class="main">
+		<div></div>
+		<div style="background-color:#f9f9f9; padding:200px; padding-top:0px;">
+		<p id="Pname" class="gameText"><b>Name</b></p>
+		<img id="Pimage" src="" style="height:400px;">
+		<div style="padding:2px; background-color:black; width:100%;"></div>
+		<p id="dateRange" class="gameText">0000-0000</p>
+		<button class="buttons">Dead</button>  <button class="buttons">Alive</button>
+		</div>
+	</div>
+
+</body>
+
+<script>
+window.onload=startGame();
+
+function startGame(){
+	let search="Charles Mingus";
+	let url = "https://en.wikipedia.org/w/api.php?" +
+    new URLSearchParams({
+      action: "query",
+      format: "json",
+      origin: "*",
+      prop: "pageprops",
+      titles: search
+    });
+	fetchRange(url, search);
+	
+
+}
+function fetchRange(url, search){
+	fetch(url).then(response => response.json()).then(data => {
+		console.log(data);
+		let pages=data.query.pages;
+		const wikidataId = Object.values(pages)[0].pageprops.wikibase_item;
+		console.log(wikidataId);
+		fetch("https://www.wikidata.org/wiki/Special:EntityData/"+wikidataId+".json").then(response => response.json()).then(data => {
+			console.log(data);
+			let entity = data.entities[wikidataId];
+			let bClaim = entity.claims.P569;
+			let dClaim = entity.claims.P570;
+			let bTime=bClaim[0].mainsnak.datavalue.value.time;
+			let dTime=dClaim[0].mainsnak.datavalue.value.time;
+			console.log(bTime);
+			console.log(dTime);
+			const birth=bTime.substring(1).split("-")[0];
+			const death=dTime.substring(1).split("-")[0];
+			console.log(birth);
+			console.log(death);
+			let iClaim = entity.claims.P18;
+			const wImage = iClaim? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(iClaim[0].mainsnak.datavalue.value)}`: null;
+				console.log(wImage);
+			document.getElementById("Pname").innerText=search;
+			document.getElementById("Pimage").src=wImage;
+			document.getElementById("dateRange").innerText=birth+" - "+death;
+		})
+	})
+	
+}
+
+function checkPerson(){
+	let personCheck=false;
+	let url="https://www.wikidata.org/w/api.php?action=query&origin=*&list=random&rnnamespace=0&format=json";
+
+	fetch(url).then(response => response.json()).then(data => {
+		console.log(data);
+		let pages=data.query.random[0].title;
+		console.log(pages);
+		
+		fetch("https://www.wikidata.org/wiki/Special:EntityData/"+pages+".json").then(response => response.json()).then(data => {
+			console.log(data);
+			let entity = data.entities[pages];
+			let pClaim = entity.claims.P31;
+			console.log(pClaim.mainsnak.datavalue.value.id);
+			if (pClaim.mainsnak.datavalue.value.id == "Q5"){
+				console.log("Person");
+			} else {console.log("Not Person");}
+		})
+	})
+}
+
+async function getRandomHumanSPARQL() {
+    const query = `
+        SELECT ?person WHERE {
+            ?person wdt:P31 wd:Q5 .
+        }
+        ORDER BY RAND()
+        LIMIT 1
+    `;
+
+    const url = "https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(query);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const uri = data.results.bindings[0].person.value;
+    return uri.split("/").pop(); // extract QID
+}
+
+
+
+</script>
+
+
+</html>
