@@ -60,8 +60,9 @@
 		<img id="Pimage" src="" style="height:400px;">
 		<div style="padding:2px; background-color:black; width:100%;"></div>
 		<p id="givenYear" class="gameText">0000</p>
-		<button class="buttons" onclick="dead()">Dead</button>  <button class="buttons" onclick="alive()">Alive</button>
+		<button id="dead" class="buttons" onclick="dead()">Dead</button>  <button id="alive" class="buttons" onclick="alive()">Alive</button>
 		<p id="dateRange" class="gameText" style="visibility:hidden;">0000-0000</p>
+		<button id="nextPerson" class="buttons" onclick="nextPerson()" style="visibility:hidden;">Next</button>
 		</div>
 	</div>
 
@@ -77,7 +78,6 @@ async function fetchPeople(){
 	const response = await fetch("PeopleList.json");
 	PeopleList = await response.json();
 	console.log("Fetch Status:",response.ok);
-	console.log(PeopleList[50]);
 	startGame();
 }
 
@@ -133,7 +133,7 @@ function fetchRange(url, search){
 			document.getElementById("dateRange").innerText=birth+" - "+death;
 			let mean = ((parseInt(death)+parseInt(birth))/2);
 			console.log(mean);
-			let year = genRan(mean);
+			year = genRan(mean);
 			document.getElementById("givenYear").innerText=Math.round(year);
 		})
 	})
@@ -141,28 +141,38 @@ function fetchRange(url, search){
 }
 
 function dead(){
-	if (year<birth || year>death){
+	if (year<=birth || year>=death){
 	document.getElementById("dateRange").innerText="Correct "+birth+" - "+death;
 	document.getElementById("dateRange").style.visibility="visible";
+	document.getElementById("nextPerson").style.visibility="visible";
 } else { 
 	document.getElementById("dateRange").innerText="Incorrect "+birth+" - "+death;
 	document.getElementById("dateRange").style.visibility="visible";
+	document.getElementById("nextPerson").style.visibility="visible";
 	}
 }
 
 function alive(){
-	if (parseInt(year)>parseInt(birth) && parseInt(year)<parseInt(death)){
+	if (year>=birth && year<death){
 	document.getElementById("dateRange").innerText="Correct "+birth+" - "+death;
 	document.getElementById("dateRange").style.visibility="visible";
+	document.getElementById("nextPerson").style.visibility="visible";
 } else { 
 	document.getElementById("dateRange").innerText="Incorrect "+birth+" - "+death;
 	document.getElementById("dateRange").style.visibility="visible";
+	document.getElementById("nextPerson").style.visibility="visible";
 	}
+}
+
+function nextPerson(){
+	document.getElementById("Pimage").src="Loading.jpg";
+	document.getElementById("dateRange").style.visibility="hidden";
+	document.getElementById("nextPerson").style.visibility="hidden";
+	startGame();
 }
 
 window.onload= fetchPeople();
 
 </script>
-
 
 </html>
