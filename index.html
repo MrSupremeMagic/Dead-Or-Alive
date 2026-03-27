@@ -20,6 +20,14 @@
 			padding-bottom:2px;
 		}
 
+		.graves{
+			display:grid;
+			grid-template-columns:auto auto auto;
+			padding:10px;
+			padding-top:0px;
+			text-align:center;
+		}
+		
 		.main{
 			display:grid;
 			grid-template-columns:auto auto auto;
@@ -56,6 +64,11 @@
 	<div class="main">
 		<div></div>
 		<div style="background-color:#f9f9f9; padding:200px; padding-top:0px;">
+		<div class="graves">
+			<img id="grave1" src="Gravestone.png" style="height:100px;">
+			<img id="grave2" src="Gravestone.png" style="height:100px;">
+			<img id="grave3" src="Gravestone.png" style="height:100px;">
+		</div>
 		<p id="Pname" class="gameText"><b>Name</b></p>
 		<img id="Pimage" src="" style="height:400px;">
 		<div style="padding:2px; background-color:black; width:100%;"></div>
@@ -73,6 +86,8 @@ let PeopleList = [];
 let year=0;
 let birth=0;
 let death=0;
+let lives=3;
+let score=0;
 
 async function fetchPeople(){
 	const response = await fetch("PeopleList.json");
@@ -141,12 +156,19 @@ function fetchRange(url, search){
 }
 
 function dead(){
+	
 	if (year<=birth || year>=death){
 	document.getElementById("dateRange").innerText="Correct "+birth+" - "+death;
+	score+=1;
 	document.getElementById("dateRange").style.visibility="visible";
 	document.getElementById("nextPerson").style.visibility="visible";
 } else { 
 	document.getElementById("dateRange").innerText="Incorrect "+birth+" - "+death;
+	lives-=1;
+	checkLives();
+	if (lives==0){
+		endGame();
+	}
 	document.getElementById("dateRange").style.visibility="visible";
 	document.getElementById("nextPerson").style.visibility="visible";
 	}
@@ -155,22 +177,63 @@ function dead(){
 function alive(){
 	if (year>=birth && year<death){
 	document.getElementById("dateRange").innerText="Correct "+birth+" - "+death;
+	score+=1;
 	document.getElementById("dateRange").style.visibility="visible";
 	document.getElementById("nextPerson").style.visibility="visible";
 } else { 
 	document.getElementById("dateRange").innerText="Incorrect "+birth+" - "+death;
+	lives-=1;
+	checkLives();
+	if (lives==0){
+		endGame();
+	}
 	document.getElementById("dateRange").style.visibility="visible";
 	document.getElementById("nextPerson").style.visibility="visible";
 	}
 }
 
 function nextPerson(){
+	document.getElementById("Pimage").style.visibility="visible";
 	document.getElementById("Pimage").src="Loading.jpg";
 	document.getElementById("dateRange").style.visibility="hidden";
 	document.getElementById("nextPerson").style.visibility="hidden";
+	if (lives==0){
+		score=0;
+		lives=3;
+		document.getElementById("grave1").src="Gravestone.png";
+		document.getElementById("grave2").src="Gravestone.png";
+		document.getElementById("grave3").src="Gravestone.png";
+		document.getElementById("dead").style.visibility="visible";
+		document.getElementById("alive").style.visibility="visible";
+		document.getElementById("givenYear").style.visibility="visible";
+		document.getElementById("Pimage").style.height="400px";
+		document.getElementById("nextPerson").innerText="Next";
+	}
 	startGame();
 }
 
+function checkLives(){
+	if (lives==2){
+		document.getElementById("grave1").src="GravestoneLost.png";
+	}
+	if (lives==1){
+		document.getElementById("grave2").src="GravestoneLost.png";
+	}
+	if (lives==0){
+		document.getElementById("grave3").src="GravestoneLost.png";
+	}
+}
+
+function endGame(){
+	document.getElementById("Pimage").style.visibility="hidden";
+	document.getElementById("givenYear").style.visibility="hidden";
+	document.getElementById("Pimage").style.height="0px";
+	document.getElementById("Pname").innerText="You died!"
+	document.getElementById("dateRange").innerText="Your score was "+score;
+	document.getElementById("dead").style.visibility="hidden";
+	document.getElementById("alive").style.visibility="hidden";
+	document.getElementById("nextPerson").innerText="Play Again";
+}
 window.onload= fetchPeople();
 
 </script>
